@@ -49,7 +49,7 @@ const modals = () => {
                 });
                 modal.style.display = 'none'; //скрытие окна
                 document.body.style.overflow = ''; //восстановление прокрутки  
-                document.body.style.marginRight = ``;
+                document.body.style.marginRight = ``; //
                 gift.style.right = ``; //при появлении скрола будет 0
             }
         });
