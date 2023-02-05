@@ -1,5 +1,3 @@
-// import checkNumInputs from "./checkNumInputs";
-
 const forms = () => {
 
     const form = document.querySelectorAll('form'),
@@ -7,9 +5,6 @@ const forms = () => {
           inputs = document.querySelectorAll('input'),
           upload = document.querySelectorAll('[name="upload"]'); //выдергиваем upload для названия загружаемого изображения
     
-    //Введение в поле с телефоном только цифр
-    // checkNumInputs('input[name="phone"]');
-
     //Ф-я для очищения полей
     const clearInputs = () => {
         inputs.forEach(item => {
