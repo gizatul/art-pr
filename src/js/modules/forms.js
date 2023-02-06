@@ -1,3 +1,4 @@
+import { postData } from "../services/requests";
 const forms = () => {
 
     const form = document.querySelectorAll('form'),
@@ -30,14 +31,6 @@ const forms = () => {
         question: 'assets/question.php',
     }
 
-    //Создаем ф-ю отправки данных
-    const postData = async (url, data) => { //асинхронная ф-я - async
-        let res = await fetch(url, { //асинхронная операция await, чтобы JS дождался выполнения операции, т.к. ответ от сервера может идти долго
-            method: 'POST',
-            body: data,
-        });
-        return await res.text(); //возврат текстовых данных(в данном случае, тоже ждем окончания операции (await)
-    };
     //Размещение названия файла вместо "Файл не выбран"
     upload.forEach(item => {
         item.addEventListener('input', () => { //ОС сработает когда пользователь положит в поле
