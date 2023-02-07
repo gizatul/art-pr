@@ -1,5 +1,6 @@
 import { postData } from "../services/requests";
-const forms = () => {
+import clearObject from "./clearObject";
+const forms = (state) => {
 
     const form = document.querySelectorAll('form'),
           windows = document.querySelectorAll('[data-modal]'),
@@ -103,7 +104,12 @@ const forms = () => {
                         item.style.display = 'block';
                         item.classList.remove('fadeOutUp');
                         item.classList.remove('fadeInUp');
-                    }, 5000);              
+                        clearObject(state);  
+                        document.querySelectorAll('.calc select').forEach(select => {
+                            select.value = ''; //очистка формы с заказом
+                        });   
+                    }, 5000); 
+                            
                 }); 
         });
     });
