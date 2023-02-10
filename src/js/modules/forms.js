@@ -35,7 +35,6 @@ const forms = (state) => {
     //Размещение названия файла вместо "Файл не выбран"
     upload.forEach(item => {
         item.addEventListener('input', () => { //ОС сработает когда пользователь положит в поле
-            console.log(item.files[0]); // item.files[0] - обращение к загруженному файлу
             let dots; // точки
             const arrName = item.files[0].name.split('.');
             arrName[0].length > 6 ? dots = '...' : dots = '.';

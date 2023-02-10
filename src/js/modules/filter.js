@@ -26,21 +26,17 @@ const filter = () => {
           }
     };
 
-    //Добавление активности нужному табу
+    
     menu.addEventListener('click', (e) => {
         if (e.target && e.target.tagName == 'LI') {
             tabs.forEach(btn => {
-                btn.classList.remove('active');
+                btn.classList.remove('active'); //убираем актиность со всех табов
             });
-            e.target.classList.add('active');
+            e.target.classList.add('active'); //Добавление активности щелкнутому табу
         }
+        let classSelect = e.target.classList[0]; //из щелкнутого элем выдергиваем первый класс
+        typeFilter(wrapper.querySelectorAll(`.${classSelect}`)); //сработает когда классы кнопки и контента совпадают
     });
-
-    menu.addEventListener('click', (e) => {
-        let classSelect = e.target.classList[0]; //из класса выдергиваем первый класс
-        let allElems = wrapper.querySelectorAll(`.${classSelect}`);
-        typeFilter(allElems);
-      });
     
 };
 export default filter;

@@ -296,6 +296,36 @@ module.exports = {
 
 /***/ }),
 
+/***/ "./node_modules/core-js/internals/array-method-has-species-support.js":
+/*!****************************************************************************!*\
+  !*** ./node_modules/core-js/internals/array-method-has-species-support.js ***!
+  \****************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var fails = __webpack_require__(/*! ../internals/fails */ "./node_modules/core-js/internals/fails.js");
+var wellKnownSymbol = __webpack_require__(/*! ../internals/well-known-symbol */ "./node_modules/core-js/internals/well-known-symbol.js");
+var V8_VERSION = __webpack_require__(/*! ../internals/v8-version */ "./node_modules/core-js/internals/v8-version.js");
+
+var SPECIES = wellKnownSymbol('species');
+
+module.exports = function (METHOD_NAME) {
+  // We can't use this feature detection in V8 since it causes
+  // deoptimization and serious performance degradation
+  // https://github.com/zloirock/core-js/issues/677
+  return V8_VERSION >= 51 || !fails(function () {
+    var array = [];
+    var constructor = array.constructor = {};
+    constructor[SPECIES] = function () {
+      return { foo: 1 };
+    };
+    return array[METHOD_NAME](Boolean).foo !== 1;
+  });
+};
+
+
+/***/ }),
+
 /***/ "./node_modules/core-js/internals/array-species-create.js":
 /*!****************************************************************!*\
   !*** ./node_modules/core-js/internals/array-species-create.js ***!
@@ -513,6 +543,29 @@ module.exports = function (target, source) {
 
 /***/ }),
 
+/***/ "./node_modules/core-js/internals/create-html.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/core-js/internals/create-html.js ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var requireObjectCoercible = __webpack_require__(/*! ../internals/require-object-coercible */ "./node_modules/core-js/internals/require-object-coercible.js");
+
+var quot = /"/g;
+
+// B.2.3.2.1 CreateHTML(string, tag, attribute, value)
+// https://tc39.github.io/ecma262/#sec-createhtml
+module.exports = function (string, tag, attribute, value) {
+  var S = String(requireObjectCoercible(string));
+  var p1 = '<' + tag;
+  if (attribute !== '') p1 += ' ' + attribute + '="' + String(value).replace(quot, '&quot;') + '"';
+  return p1 + '>' + S + '</' + tag + '>';
+};
+
+
+/***/ }),
+
 /***/ "./node_modules/core-js/internals/create-non-enumerable-property.js":
 /*!**************************************************************************!*\
   !*** ./node_modules/core-js/internals/create-non-enumerable-property.js ***!
@@ -548,6 +601,28 @@ module.exports = function (bitmap, value) {
     writable: !(bitmap & 4),
     value: value
   };
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/create-property.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/core-js/internals/create-property.js ***!
+  \***********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var toPrimitive = __webpack_require__(/*! ../internals/to-primitive */ "./node_modules/core-js/internals/to-primitive.js");
+var definePropertyModule = __webpack_require__(/*! ../internals/object-define-property */ "./node_modules/core-js/internals/object-define-property.js");
+var createPropertyDescriptor = __webpack_require__(/*! ../internals/create-property-descriptor */ "./node_modules/core-js/internals/create-property-descriptor.js");
+
+module.exports = function (object, key, value) {
+  var propertyKey = toPrimitive(key);
+  if (propertyKey in object) definePropertyModule.f(object, propertyKey, createPropertyDescriptor(0, value));
+  else object[propertyKey] = value;
 };
 
 
@@ -848,6 +923,27 @@ module.exports = function (KEY, length, exec, sham) {
     );
     if (sham) createNonEnumerableProperty(RegExp.prototype[SYMBOL], 'sham', true);
   }
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/forced-string-html-method.js":
+/*!*********************************************************************!*\
+  !*** ./node_modules/core-js/internals/forced-string-html-method.js ***!
+  \*********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var fails = __webpack_require__(/*! ../internals/fails */ "./node_modules/core-js/internals/fails.js");
+
+// check the existence of a method, lowercase
+// of a tag and escaping quotes in arguments
+module.exports = function (METHOD_NAME) {
+  return fails(function () {
+    var test = ''[METHOD_NAME]('"');
+    return test !== test.toLowerCase() || test.split('"').length > 3;
+  });
 };
 
 
@@ -1225,6 +1321,29 @@ module.exports = function (it) {
 /***/ (function(module, exports) {
 
 module.exports = false;
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/is-regexp.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/core-js/internals/is-regexp.js ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var isObject = __webpack_require__(/*! ../internals/is-object */ "./node_modules/core-js/internals/is-object.js");
+var classof = __webpack_require__(/*! ../internals/classof-raw */ "./node_modules/core-js/internals/classof-raw.js");
+var wellKnownSymbol = __webpack_require__(/*! ../internals/well-known-symbol */ "./node_modules/core-js/internals/well-known-symbol.js");
+
+var MATCH = wellKnownSymbol('match');
+
+// `IsRegExp` abstract operation
+// https://tc39.github.io/ecma262/#sec-isregexp
+module.exports = function (it) {
+  var isRegExp;
+  return isObject(it) && ((isRegExp = it[MATCH]) !== undefined ? !!isRegExp : classof(it) == 'RegExp');
+};
 
 
 /***/ }),
@@ -2493,6 +2612,78 @@ module.exports = function (name) {
 
 /***/ }),
 
+/***/ "./node_modules/core-js/modules/es.array.concat.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/core-js/modules/es.array.concat.js ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var $ = __webpack_require__(/*! ../internals/export */ "./node_modules/core-js/internals/export.js");
+var fails = __webpack_require__(/*! ../internals/fails */ "./node_modules/core-js/internals/fails.js");
+var isArray = __webpack_require__(/*! ../internals/is-array */ "./node_modules/core-js/internals/is-array.js");
+var isObject = __webpack_require__(/*! ../internals/is-object */ "./node_modules/core-js/internals/is-object.js");
+var toObject = __webpack_require__(/*! ../internals/to-object */ "./node_modules/core-js/internals/to-object.js");
+var toLength = __webpack_require__(/*! ../internals/to-length */ "./node_modules/core-js/internals/to-length.js");
+var createProperty = __webpack_require__(/*! ../internals/create-property */ "./node_modules/core-js/internals/create-property.js");
+var arraySpeciesCreate = __webpack_require__(/*! ../internals/array-species-create */ "./node_modules/core-js/internals/array-species-create.js");
+var arrayMethodHasSpeciesSupport = __webpack_require__(/*! ../internals/array-method-has-species-support */ "./node_modules/core-js/internals/array-method-has-species-support.js");
+var wellKnownSymbol = __webpack_require__(/*! ../internals/well-known-symbol */ "./node_modules/core-js/internals/well-known-symbol.js");
+var V8_VERSION = __webpack_require__(/*! ../internals/v8-version */ "./node_modules/core-js/internals/v8-version.js");
+
+var IS_CONCAT_SPREADABLE = wellKnownSymbol('isConcatSpreadable');
+var MAX_SAFE_INTEGER = 0x1FFFFFFFFFFFFF;
+var MAXIMUM_ALLOWED_INDEX_EXCEEDED = 'Maximum allowed index exceeded';
+
+// We can't use this feature detection in V8 since it causes
+// deoptimization and serious performance degradation
+// https://github.com/zloirock/core-js/issues/679
+var IS_CONCAT_SPREADABLE_SUPPORT = V8_VERSION >= 51 || !fails(function () {
+  var array = [];
+  array[IS_CONCAT_SPREADABLE] = false;
+  return array.concat()[0] !== array;
+});
+
+var SPECIES_SUPPORT = arrayMethodHasSpeciesSupport('concat');
+
+var isConcatSpreadable = function (O) {
+  if (!isObject(O)) return false;
+  var spreadable = O[IS_CONCAT_SPREADABLE];
+  return spreadable !== undefined ? !!spreadable : isArray(O);
+};
+
+var FORCED = !IS_CONCAT_SPREADABLE_SUPPORT || !SPECIES_SUPPORT;
+
+// `Array.prototype.concat` method
+// https://tc39.github.io/ecma262/#sec-array.prototype.concat
+// with adding support of @@isConcatSpreadable and @@species
+$({ target: 'Array', proto: true, forced: FORCED }, {
+  concat: function concat(arg) { // eslint-disable-line no-unused-vars
+    var O = toObject(this);
+    var A = arraySpeciesCreate(O, 0);
+    var n = 0;
+    var i, k, length, len, E;
+    for (i = -1, length = arguments.length; i < length; i++) {
+      E = i === -1 ? O : arguments[i];
+      if (isConcatSpreadable(E)) {
+        len = toLength(E.length);
+        if (n + len > MAX_SAFE_INTEGER) throw TypeError(MAXIMUM_ALLOWED_INDEX_EXCEEDED);
+        for (k = 0; k < len; k++, n++) if (k in E) createProperty(A, n, E[k]);
+      } else {
+        if (n >= MAX_SAFE_INTEGER) throw TypeError(MAXIMUM_ALLOWED_INDEX_EXCEEDED);
+        createProperty(A, n++, E);
+      }
+    }
+    A.length = n;
+    return A;
+  }
+});
+
+
+/***/ }),
+
 /***/ "./node_modules/core-js/modules/es.array.for-each.js":
 /*!***********************************************************!*\
   !*** ./node_modules/core-js/modules/es.array.for-each.js ***!
@@ -2510,6 +2701,96 @@ var forEach = __webpack_require__(/*! ../internals/array-for-each */ "./node_mod
 $({ target: 'Array', proto: true, forced: [].forEach != forEach }, {
   forEach: forEach
 });
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/modules/es.array.slice.js":
+/*!********************************************************!*\
+  !*** ./node_modules/core-js/modules/es.array.slice.js ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var $ = __webpack_require__(/*! ../internals/export */ "./node_modules/core-js/internals/export.js");
+var isObject = __webpack_require__(/*! ../internals/is-object */ "./node_modules/core-js/internals/is-object.js");
+var isArray = __webpack_require__(/*! ../internals/is-array */ "./node_modules/core-js/internals/is-array.js");
+var toAbsoluteIndex = __webpack_require__(/*! ../internals/to-absolute-index */ "./node_modules/core-js/internals/to-absolute-index.js");
+var toLength = __webpack_require__(/*! ../internals/to-length */ "./node_modules/core-js/internals/to-length.js");
+var toIndexedObject = __webpack_require__(/*! ../internals/to-indexed-object */ "./node_modules/core-js/internals/to-indexed-object.js");
+var createProperty = __webpack_require__(/*! ../internals/create-property */ "./node_modules/core-js/internals/create-property.js");
+var arrayMethodHasSpeciesSupport = __webpack_require__(/*! ../internals/array-method-has-species-support */ "./node_modules/core-js/internals/array-method-has-species-support.js");
+var wellKnownSymbol = __webpack_require__(/*! ../internals/well-known-symbol */ "./node_modules/core-js/internals/well-known-symbol.js");
+
+var SPECIES = wellKnownSymbol('species');
+var nativeSlice = [].slice;
+var max = Math.max;
+
+// `Array.prototype.slice` method
+// https://tc39.github.io/ecma262/#sec-array.prototype.slice
+// fallback for not array-like ES3 strings and DOM objects
+$({ target: 'Array', proto: true, forced: !arrayMethodHasSpeciesSupport('slice') }, {
+  slice: function slice(start, end) {
+    var O = toIndexedObject(this);
+    var length = toLength(O.length);
+    var k = toAbsoluteIndex(start, length);
+    var fin = toAbsoluteIndex(end === undefined ? length : end, length);
+    // inline `ArraySpeciesCreate` for usage native `Array#slice` where it's possible
+    var Constructor, result, n;
+    if (isArray(O)) {
+      Constructor = O.constructor;
+      // cross-realm fallback
+      if (typeof Constructor == 'function' && (Constructor === Array || isArray(Constructor.prototype))) {
+        Constructor = undefined;
+      } else if (isObject(Constructor)) {
+        Constructor = Constructor[SPECIES];
+        if (Constructor === null) Constructor = undefined;
+      }
+      if (Constructor === Array || Constructor === undefined) {
+        return nativeSlice.call(O, k, fin);
+      }
+    }
+    result = new (Constructor === undefined ? Array : Constructor)(max(fin - k, 0));
+    for (n = 0; k < fin; k++, n++) if (k in O) createProperty(result, n, O[k]);
+    result.length = n;
+    return result;
+  }
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/modules/es.function.name.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/core-js/modules/es.function.name.js ***!
+  \**********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var DESCRIPTORS = __webpack_require__(/*! ../internals/descriptors */ "./node_modules/core-js/internals/descriptors.js");
+var defineProperty = __webpack_require__(/*! ../internals/object-define-property */ "./node_modules/core-js/internals/object-define-property.js").f;
+
+var FunctionPrototype = Function.prototype;
+var FunctionPrototypeToString = FunctionPrototype.toString;
+var nameRE = /^\s*function ([^ (]*)/;
+var NAME = 'name';
+
+// Function instances `.name` property
+// https://tc39.github.io/ecma262/#sec-function-instances-name
+if (DESCRIPTORS && !(NAME in FunctionPrototype)) {
+  defineProperty(FunctionPrototype, NAME, {
+    configurable: true,
+    get: function () {
+      try {
+        return FunctionPrototypeToString.call(this).match(nameRE)[1];
+      } catch (error) {
+        return '';
+      }
+    }
+  });
+}
 
 
 /***/ }),
@@ -2992,6 +3273,30 @@ $({ target: 'RegExp', proto: true, forced: /./.exec !== exec }, {
 
 /***/ }),
 
+/***/ "./node_modules/core-js/modules/es.string.link.js":
+/*!********************************************************!*\
+  !*** ./node_modules/core-js/modules/es.string.link.js ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var $ = __webpack_require__(/*! ../internals/export */ "./node_modules/core-js/internals/export.js");
+var createHTML = __webpack_require__(/*! ../internals/create-html */ "./node_modules/core-js/internals/create-html.js");
+var forcedStringHTMLMethod = __webpack_require__(/*! ../internals/forced-string-html-method */ "./node_modules/core-js/internals/forced-string-html-method.js");
+
+// `String.prototype.link` method
+// https://tc39.github.io/ecma262/#sec-string.prototype.link
+$({ target: 'String', proto: true, forced: forcedStringHTMLMethod('link') }, {
+  link: function link(url) {
+    return createHTML(this, 'a', 'href', url);
+  }
+});
+
+
+/***/ }),
+
 /***/ "./node_modules/core-js/modules/es.string.replace.js":
 /*!***********************************************************!*\
   !*** ./node_modules/core-js/modules/es.string.replace.js ***!
@@ -3126,6 +3431,152 @@ fixRegExpWellKnownSymbolLogic('replace', 2, function (REPLACE, nativeReplace, ma
     });
   }
 });
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/modules/es.string.split.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/core-js/modules/es.string.split.js ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var fixRegExpWellKnownSymbolLogic = __webpack_require__(/*! ../internals/fix-regexp-well-known-symbol-logic */ "./node_modules/core-js/internals/fix-regexp-well-known-symbol-logic.js");
+var isRegExp = __webpack_require__(/*! ../internals/is-regexp */ "./node_modules/core-js/internals/is-regexp.js");
+var anObject = __webpack_require__(/*! ../internals/an-object */ "./node_modules/core-js/internals/an-object.js");
+var requireObjectCoercible = __webpack_require__(/*! ../internals/require-object-coercible */ "./node_modules/core-js/internals/require-object-coercible.js");
+var speciesConstructor = __webpack_require__(/*! ../internals/species-constructor */ "./node_modules/core-js/internals/species-constructor.js");
+var advanceStringIndex = __webpack_require__(/*! ../internals/advance-string-index */ "./node_modules/core-js/internals/advance-string-index.js");
+var toLength = __webpack_require__(/*! ../internals/to-length */ "./node_modules/core-js/internals/to-length.js");
+var callRegExpExec = __webpack_require__(/*! ../internals/regexp-exec-abstract */ "./node_modules/core-js/internals/regexp-exec-abstract.js");
+var regexpExec = __webpack_require__(/*! ../internals/regexp-exec */ "./node_modules/core-js/internals/regexp-exec.js");
+var fails = __webpack_require__(/*! ../internals/fails */ "./node_modules/core-js/internals/fails.js");
+
+var arrayPush = [].push;
+var min = Math.min;
+var MAX_UINT32 = 0xFFFFFFFF;
+
+// babel-minify transpiles RegExp('x', 'y') -> /x/y and it causes SyntaxError
+var SUPPORTS_Y = !fails(function () { return !RegExp(MAX_UINT32, 'y'); });
+
+// @@split logic
+fixRegExpWellKnownSymbolLogic('split', 2, function (SPLIT, nativeSplit, maybeCallNative) {
+  var internalSplit;
+  if (
+    'abbc'.split(/(b)*/)[1] == 'c' ||
+    'test'.split(/(?:)/, -1).length != 4 ||
+    'ab'.split(/(?:ab)*/).length != 2 ||
+    '.'.split(/(.?)(.?)/).length != 4 ||
+    '.'.split(/()()/).length > 1 ||
+    ''.split(/.?/).length
+  ) {
+    // based on es5-shim implementation, need to rework it
+    internalSplit = function (separator, limit) {
+      var string = String(requireObjectCoercible(this));
+      var lim = limit === undefined ? MAX_UINT32 : limit >>> 0;
+      if (lim === 0) return [];
+      if (separator === undefined) return [string];
+      // If `separator` is not a regex, use native split
+      if (!isRegExp(separator)) {
+        return nativeSplit.call(string, separator, lim);
+      }
+      var output = [];
+      var flags = (separator.ignoreCase ? 'i' : '') +
+                  (separator.multiline ? 'm' : '') +
+                  (separator.unicode ? 'u' : '') +
+                  (separator.sticky ? 'y' : '');
+      var lastLastIndex = 0;
+      // Make `global` and avoid `lastIndex` issues by working with a copy
+      var separatorCopy = new RegExp(separator.source, flags + 'g');
+      var match, lastIndex, lastLength;
+      while (match = regexpExec.call(separatorCopy, string)) {
+        lastIndex = separatorCopy.lastIndex;
+        if (lastIndex > lastLastIndex) {
+          output.push(string.slice(lastLastIndex, match.index));
+          if (match.length > 1 && match.index < string.length) arrayPush.apply(output, match.slice(1));
+          lastLength = match[0].length;
+          lastLastIndex = lastIndex;
+          if (output.length >= lim) break;
+        }
+        if (separatorCopy.lastIndex === match.index) separatorCopy.lastIndex++; // Avoid an infinite loop
+      }
+      if (lastLastIndex === string.length) {
+        if (lastLength || !separatorCopy.test('')) output.push('');
+      } else output.push(string.slice(lastLastIndex));
+      return output.length > lim ? output.slice(0, lim) : output;
+    };
+  // Chakra, V8
+  } else if ('0'.split(undefined, 0).length) {
+    internalSplit = function (separator, limit) {
+      return separator === undefined && limit === 0 ? [] : nativeSplit.call(this, separator, limit);
+    };
+  } else internalSplit = nativeSplit;
+
+  return [
+    // `String.prototype.split` method
+    // https://tc39.github.io/ecma262/#sec-string.prototype.split
+    function split(separator, limit) {
+      var O = requireObjectCoercible(this);
+      var splitter = separator == undefined ? undefined : separator[SPLIT];
+      return splitter !== undefined
+        ? splitter.call(separator, O, limit)
+        : internalSplit.call(String(O), separator, limit);
+    },
+    // `RegExp.prototype[@@split]` method
+    // https://tc39.github.io/ecma262/#sec-regexp.prototype-@@split
+    //
+    // NOTE: This cannot be properly polyfilled in engines that don't support
+    // the 'y' flag.
+    function (regexp, limit) {
+      var res = maybeCallNative(internalSplit, regexp, this, limit, internalSplit !== nativeSplit);
+      if (res.done) return res.value;
+
+      var rx = anObject(regexp);
+      var S = String(this);
+      var C = speciesConstructor(rx, RegExp);
+
+      var unicodeMatching = rx.unicode;
+      var flags = (rx.ignoreCase ? 'i' : '') +
+                  (rx.multiline ? 'm' : '') +
+                  (rx.unicode ? 'u' : '') +
+                  (SUPPORTS_Y ? 'y' : 'g');
+
+      // ^(? + rx + ) is needed, in combination with some S slicing, to
+      // simulate the 'y' flag.
+      var splitter = new C(SUPPORTS_Y ? rx : '^(?:' + rx.source + ')', flags);
+      var lim = limit === undefined ? MAX_UINT32 : limit >>> 0;
+      if (lim === 0) return [];
+      if (S.length === 0) return callRegExpExec(splitter, S) === null ? [S] : [];
+      var p = 0;
+      var q = 0;
+      var A = [];
+      while (q < S.length) {
+        splitter.lastIndex = SUPPORTS_Y ? q : 0;
+        var z = callRegExpExec(splitter, SUPPORTS_Y ? S : S.slice(q));
+        var e;
+        if (
+          z === null ||
+          (e = min(toLength(splitter.lastIndex + (SUPPORTS_Y ? 0 : q)), S.length)) === p
+        ) {
+          q = advanceStringIndex(S, q, unicodeMatching);
+        } else {
+          A.push(S.slice(p, q));
+          if (A.length === lim) return A;
+          for (var i = 1; i <= z.length - 1; i++) {
+            A.push(z[i]);
+            if (A.length === lim) return A;
+          }
+          q = p = e;
+        }
+      }
+      A.push(S.slice(p));
+      return A;
+    }
+  ];
+}, !SUPPORTS_Y);
 
 
 /***/ }),
@@ -3937,17 +4388,209 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modules_modals__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modules/modals */ "./src/js/modules/modals.js");
 /* harmony import */ var _modules_sliders__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modules/sliders */ "./src/js/modules/sliders.js");
 /* harmony import */ var _modules_forms__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modules/forms */ "./src/js/modules/forms.js");
+/* harmony import */ var _modules_mask__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modules/mask */ "./src/js/modules/mask.js");
+/* harmony import */ var _modules_checkTextInputs__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modules/checkTextInputs */ "./src/js/modules/checkTextInputs.js");
+/* harmony import */ var _modules_showMoreStyles__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./modules/showMoreStyles */ "./src/js/modules/showMoreStyles.js");
+/* harmony import */ var _modules_calc__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./modules/calc */ "./src/js/modules/calc.js");
+/* harmony import */ var _modules_filter__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./modules/filter */ "./src/js/modules/filter.js");
+/* harmony import */ var _modules_picture__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./modules/picture */ "./src/js/modules/picture.js");
+/* harmony import */ var _modules_accordion__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./modules/accordion */ "./src/js/modules/accordion.js");
+/* harmony import */ var _modules_burger__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./modules/burger */ "./src/js/modules/burger.js");
+/* harmony import */ var _modules_scrolling__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./modules/scrolling */ "./src/js/modules/scrolling.js");
+/* harmony import */ var _modules_drop__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./modules/drop */ "./src/js/modules/drop.js");
+
+
+
+
+
+
+
+
+
+
 
 
 
 window.addEventListener('DOMContentLoaded', function () {
   'use strict';
 
+  var modalState = {};
   Object(_modules_modals__WEBPACK_IMPORTED_MODULE_0__["default"])();
   Object(_modules_sliders__WEBPACK_IMPORTED_MODULE_1__["default"])('.feedback-slider-item', 'horizontal', '.main-prev-btn', '.main-next-btn');
   Object(_modules_sliders__WEBPACK_IMPORTED_MODULE_1__["default"])('.main-slider-item', 'vertical');
-  Object(_modules_forms__WEBPACK_IMPORTED_MODULE_2__["default"])();
+  Object(_modules_forms__WEBPACK_IMPORTED_MODULE_2__["default"])(modalState);
+  Object(_modules_mask__WEBPACK_IMPORTED_MODULE_3__["default"])('[name="phone"]');
+  Object(_modules_checkTextInputs__WEBPACK_IMPORTED_MODULE_4__["default"])('[name="name"]');
+  Object(_modules_checkTextInputs__WEBPACK_IMPORTED_MODULE_4__["default"])('[name="message"]');
+  Object(_modules_showMoreStyles__WEBPACK_IMPORTED_MODULE_5__["default"])('.button-styles', '#styles .row');
+  Object(_modules_calc__WEBPACK_IMPORTED_MODULE_6__["default"])('#size', '#material', '#options', '.promocode', '.calc-price', modalState);
+  Object(_modules_filter__WEBPACK_IMPORTED_MODULE_7__["default"])();
+  Object(_modules_picture__WEBPACK_IMPORTED_MODULE_8__["default"])('.sizes-block');
+  Object(_modules_accordion__WEBPACK_IMPORTED_MODULE_9__["default"])('.accordion-heading');
+  Object(_modules_burger__WEBPACK_IMPORTED_MODULE_10__["default"])('.burger', '.burger-menu');
+  Object(_modules_scrolling__WEBPACK_IMPORTED_MODULE_11__["default"])('.pageup');
+  Object(_modules_drop__WEBPACK_IMPORTED_MODULE_12__["default"])();
 });
+
+/***/ }),
+
+/***/ "./src/js/modules/accordion.js":
+/*!*************************************!*\
+  !*** ./src/js/modules/accordion.js ***!
+  \*************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/es.array.for-each */ "./node_modules/core-js/modules/es.array.for-each.js");
+/* harmony import */ var core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! core-js/modules/web.dom-collections.for-each */ "./node_modules/core-js/modules/web.dom-collections.for-each.js");
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_1__);
+
+
+
+var accordion = function accordion(headSelector) {
+  var trigger = document.querySelectorAll(headSelector);
+  trigger.forEach(function (item) {
+    item.addEventListener('click', function () {
+      var _this = this;
+
+      //Ф-я по скрытию контента
+      trigger.forEach(function (item) {
+        if (!_this.classList.contains('active-style')) {
+          item.classList.remove('active-style');
+          item.nextElementSibling.classList.remove('active-content');
+          item.nextElementSibling.style.maxHeight = '0px';
+        }
+      });
+      this.classList.toggle('active-style');
+      this.nextElementSibling.classList.toggle('active-content');
+
+      if (this.classList.contains('active-style')) {
+        this.nextElementSibling.style.maxHeight = this.nextElementSibling.scrollHeight + 80 + 'px'; //ставим макс высоту
+      } else {
+        this.nextElementSibling.style.maxHeight = '0px';
+      }
+    });
+  }); // Реализация с помощью CSS
+  // const content = document.querySelectorAll(blockSelector);
+  // content.forEach(item => {
+  //     item.classList.add('animated', 'fadeInDown');
+  // });
+  // trigger.forEach(item => {
+  //     item.addEventListener('click', function() {
+  //         if (!this.classList.contains('active')) {
+  //             trigger.forEach(item => {
+  //                 item.classList.remove('active', 'active-style');
+  //             });
+  //             this.classList.add('active', 'active-style');
+  //         }
+  //     });
+  // });
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (accordion);
+
+/***/ }),
+
+/***/ "./src/js/modules/burger.js":
+/*!**********************************!*\
+  !*** ./src/js/modules/burger.js ***!
+  \**********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+var burger = function burger(triggerSelector, menuSelector) {
+  var burgerBtn = document.querySelector(triggerSelector),
+      burgerMenu = document.querySelector(menuSelector);
+  burgerMenu.style.display = 'none';
+  burgerBtn.addEventListener('click', function () {
+    if (burgerMenu.style.display == 'none' && window.screen.availWidth < 992) {
+      burgerMenu.style.display = 'block';
+    } else {
+      burgerMenu.style.display = 'none';
+    }
+  }); //window.screen.availWidth - Свойство availWidth возвращает ширину экрана пользователя служащую непосредственно для вывода информации (т.е. ширина без размера таких элементов браузера как панель задач, полоса прокрутки и т.д.).
+
+  window.addEventListener('resize', function () {
+    //событие ресайз отслеживает когда польз изменяет размер экрана
+    if (window.screen.availWidth > 991) {
+      burgerMenu.style.display = 'none';
+    }
+  });
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (burger);
+
+/***/ }),
+
+/***/ "./src/js/modules/calc.js":
+/*!********************************!*\
+  !*** ./src/js/modules/calc.js ***!
+  \********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/es.array.for-each */ "./node_modules/core-js/modules/es.array.for-each.js");
+/* harmony import */ var core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! core-js/modules/web.dom-collections.for-each */ "./node_modules/core-js/modules/web.dom-collections.for-each.js");
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_1__);
+
+
+
+var calc = function calc(size, material, options, promo, result, state) {
+  var resultBlock = document.querySelector(result),
+      sizeBlock = document.querySelector(size),
+      materialBlock = document.querySelector(material),
+      optionsBlock = document.querySelector(options),
+      promoBlock = document.querySelector(promo),
+      calcSelect = document.querySelectorAll('.calc select');
+  var sum = 0;
+
+  var calcFunction = function calcFunction() {
+    sum = Math.round(+sizeBlock.value * +materialBlock.value + +optionsBlock.value); //формула
+    //Условия для заполнения калькулятора
+
+    if (sizeBlock.value == '' || materialBlock.value == '') {
+      resultBlock.textContent = "Выберите размер и материал картины";
+    } else if (promoBlock.value === 'IWANTPOPART') {
+      resultBlock.innerHTML = "\u041E\u0431\u0449\u0430\u044F \u0441\u0442\u043E\u0438\u043C\u043E\u0441\u0442\u044C \u0437\u0430\u043A\u0430\u0437\u0430: <br>  ".concat(Math.round(sum * 0.7), " \u0440\u0443\u0431.");
+      state.result = Math.round(sum * 0.7);
+    } else {
+      resultBlock.innerHTML = "\u041E\u0431\u0449\u0430\u044F \u0441\u0442\u043E\u0438\u043C\u043E\u0441\u0442\u044C \u0437\u0430\u043A\u0430\u0437\u0430: <br> ".concat(Math.round(sum), " \u0440\u0443\u0431.");
+      state.result = Math.round(sum);
+    }
+
+    if (promoBlock.value) {
+      state.promo = promoBlock.value;
+    }
+
+    calcSelect.forEach(function (select) {
+      updateObject(select, 'size', 'size', sizeBlock);
+      updateObject(select, 'material', 'material', materialBlock);
+      updateObject(select, 'options', 'options', optionsBlock);
+    });
+    console.log(state);
+  };
+
+  function updateObject(select, value, key, block) {
+    if (select.getAttribute("id") == value) {
+      state[key] = block.value;
+    }
+  }
+
+  sizeBlock.addEventListener('change', calcFunction);
+  materialBlock.addEventListener('change', calcFunction);
+  optionsBlock.addEventListener('change', calcFunction);
+  promoBlock.addEventListener('input', calcFunction);
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (calc);
 
 /***/ }),
 
@@ -3984,10 +4627,10 @@ function calcScroll() {
 
 /***/ }),
 
-/***/ "./src/js/modules/checkNumInputs.js":
-/*!******************************************!*\
-  !*** ./src/js/modules/checkNumInputs.js ***!
-  \******************************************/
+/***/ "./src/js/modules/checkTextInputs.js":
+/*!*******************************************!*\
+  !*** ./src/js/modules/checkTextInputs.js ***!
+  \*******************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -4006,17 +4649,193 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-//Введение в поле с телефоном только цифр
-var checkNumInputs = function checkNumInputs(selector) {
-  var numInputs = document.querySelectorAll(selector);
-  numInputs.forEach(function (item) {
+var checkTextInputs = function checkTextInputs(selector) {
+  var textInputs = document.querySelectorAll(selector);
+  textInputs.forEach(function (item) {
     item.addEventListener('input', function () {
-      item.value = item.value.replace(/\D/, ''); //при введении не цифр ввводится пустая строка
+      item.value = item.value.replace(/[^а-я 0-9]/ig, ''); //при введении не цифр вводится пустая строка
     });
   });
 };
 
-/* harmony default export */ __webpack_exports__["default"] = (checkNumInputs);
+/* harmony default export */ __webpack_exports__["default"] = (checkTextInputs);
+
+/***/ }),
+
+/***/ "./src/js/modules/clearObject.js":
+/*!***************************************!*\
+  !*** ./src/js/modules/clearObject.js ***!
+  \***************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+function clearObject(state) {
+  for (var key in state) {
+    delete state[key];
+  }
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (clearObject);
+
+/***/ }),
+
+/***/ "./src/js/modules/drop.js":
+/*!********************************!*\
+  !*** ./src/js/modules/drop.js ***!
+  \********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/es.array.for-each */ "./node_modules/core-js/modules/es.array.for-each.js");
+/* harmony import */ var core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var core_js_modules_es_function_name__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! core-js/modules/es.function.name */ "./node_modules/core-js/modules/es.function.name.js");
+/* harmony import */ var core_js_modules_es_function_name__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_function_name__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var core_js_modules_es_regexp_exec__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! core-js/modules/es.regexp.exec */ "./node_modules/core-js/modules/es.regexp.exec.js");
+/* harmony import */ var core_js_modules_es_regexp_exec__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_regexp_exec__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var core_js_modules_es_string_split__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! core-js/modules/es.string.split */ "./node_modules/core-js/modules/es.string.split.js");
+/* harmony import */ var core_js_modules_es_string_split__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_string_split__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! core-js/modules/web.dom-collections.for-each */ "./node_modules/core-js/modules/web.dom-collections.for-each.js");
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_4__);
+
+
+
+
+
+
+var drop = function drop() {
+  var fileInputs = document.querySelectorAll('[name="upload"]');
+  ['dragenter', 'dragleave', 'dragover', 'drop'].forEach(function (eventName) {
+    fileInputs.forEach(function (input) {
+      input.addEventListener(eventName, preventDefaults, false);
+    });
+  });
+
+  function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation(); //останавливает всплытие (bubbling) события “клик” к родительским элементам.
+  } //Ф-я подсветки элемента
+
+
+  function highLight(item) {
+    item.closest('.file_upload').style.border = '5px solid yellow';
+    item.closest('.file_upload').style.backgroundColor = 'rgba(0,0,0, .7)';
+  } //Ф-я отключения подсветки элемента
+
+
+  function unhighLight(item) {
+    item.closest('.file_upload').style.border = 'none';
+
+    if (item.closest('.calc_form')) {
+      item.closest('.file_upload').style.backgroundColor = '#fff';
+    } else if (item.closest('.popup-content')) {
+      item.closest('.file_upload').style.backgroundColor = '#ededed';
+    } else {
+      item.closest('.file_upload').style.backgroundColor = '#f7e7e6';
+    }
+  }
+
+  ['dragenter', 'dragover'].forEach(function (eventName) {
+    //когда файл впервые появляется над зоной(dragenter) и когда двигаем мышкой над dropArea(dragover) 
+    fileInputs.forEach(function (input) {
+      input.addEventListener(eventName, function () {
+        return highLight(input);
+      }, false);
+    });
+  });
+  ['dragleave', 'drop'].forEach(function (eventName) {
+    //когда файл отпускаем в инпут(drop) или уводим мышку от нее (dragleve)
+    fileInputs.forEach(function (input) {
+      input.addEventListener(eventName, function () {
+        return unhighLight(input);
+      }, false);
+    });
+  });
+  fileInputs.forEach(function (input) {
+    input.addEventListener('drop', function (e) {
+      input.files = e.dataTransfer.files; //input.files - в св-ве лежат файлы кот-е загрузил пользователь
+      //e.dataTransfer.files - Объект DataTransfer используется для хранения данных, перетаскиваемых мышью во время операции drag and drop.
+
+      var dots; // точки
+
+      var arrName = input.files[0].name.split('.');
+      arrName[0].length > 6 ? dots = '...' : dots = '.';
+      var name = arrName[0].substring(0, 6) + dots + arrName[1];
+      input.previousElementSibling.textContent = name;
+    });
+  });
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (drop);
+
+/***/ }),
+
+/***/ "./src/js/modules/filter.js":
+/*!**********************************!*\
+  !*** ./src/js/modules/filter.js ***!
+  \**********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/es.array.for-each */ "./node_modules/core-js/modules/es.array.for-each.js");
+/* harmony import */ var core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! core-js/modules/web.dom-collections.for-each */ "./node_modules/core-js/modules/web.dom-collections.for-each.js");
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_1__);
+
+
+
+var filter = function filter() {
+  var menu = document.querySelector('.portfolio-menu'),
+      tabs = menu.querySelectorAll('li'),
+      wrapper = document.querySelector('.portfolio-wrapper'),
+      contentAll = wrapper.querySelectorAll('.all'),
+      contentNo = document.querySelector('.portfolio-no'); // Ф-я фильтрации
+
+  var typeFilter = function typeFilter(contentType) {
+    contentAll.forEach(function (item) {
+      item.style.display = 'none'; //скрываем все элементы
+
+      item.classList.remove('animated', 'fadeIn');
+    });
+    contentNo.style.display = "none"; //скрываем элемент
+
+    contentNo.classList.remove('animated', 'fadeIn');
+
+    if (contentType) {
+      //если контент присутствует
+      contentType.forEach(function (block) {
+        block.style.display = 'block'; //показываем все элементы
+
+        block.classList.add('animated', 'fadeIn');
+      });
+    }
+
+    if (contentType.length == 0) {
+      contentNo.style.display = 'block';
+      contentNo.classList.add('animated', 'fadeIn');
+    }
+  };
+
+  menu.addEventListener('click', function (e) {
+    if (e.target && e.target.tagName == 'LI') {
+      tabs.forEach(function (btn) {
+        btn.classList.remove('active'); //убираем актиность со всех табов
+      });
+      e.target.classList.add('active'); //Добавление активности щелкнутому табу
+    }
+
+    var classSelect = e.target.classList[0]; //из щелкнутого элем выдергиваем первый класс
+
+    typeFilter(wrapper.querySelectorAll(".".concat(classSelect))); //сработает когда классы кнопки и контента совпадают
+  });
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (filter);
 
 /***/ }),
 
@@ -4031,17 +4850,25 @@ var checkNumInputs = function checkNumInputs(selector) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/es.array.for-each */ "./node_modules/core-js/modules/es.array.for-each.js");
 /* harmony import */ var core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var core_js_modules_es_object_to_string__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! core-js/modules/es.object.to-string */ "./node_modules/core-js/modules/es.object.to-string.js");
-/* harmony import */ var core_js_modules_es_object_to_string__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_object_to_string__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var core_js_modules_es_promise__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! core-js/modules/es.promise */ "./node_modules/core-js/modules/es.promise.js");
-/* harmony import */ var core_js_modules_es_promise__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_promise__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var core_js_modules_es_promise_finally__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! core-js/modules/es.promise.finally */ "./node_modules/core-js/modules/es.promise.finally.js");
-/* harmony import */ var core_js_modules_es_promise_finally__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_promise_finally__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! core-js/modules/web.dom-collections.for-each */ "./node_modules/core-js/modules/web.dom-collections.for-each.js");
-/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var regenerator_runtime_runtime__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! regenerator-runtime/runtime */ "./node_modules/regenerator-runtime/runtime.js");
-/* harmony import */ var regenerator_runtime_runtime__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(regenerator_runtime_runtime__WEBPACK_IMPORTED_MODULE_5__);
-/* harmony import */ var _checkNumInputs__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./checkNumInputs */ "./src/js/modules/checkNumInputs.js");
+/* harmony import */ var core_js_modules_es_function_name__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! core-js/modules/es.function.name */ "./node_modules/core-js/modules/es.function.name.js");
+/* harmony import */ var core_js_modules_es_function_name__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_function_name__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var core_js_modules_es_object_to_string__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! core-js/modules/es.object.to-string */ "./node_modules/core-js/modules/es.object.to-string.js");
+/* harmony import */ var core_js_modules_es_object_to_string__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_object_to_string__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var core_js_modules_es_promise__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! core-js/modules/es.promise */ "./node_modules/core-js/modules/es.promise.js");
+/* harmony import */ var core_js_modules_es_promise__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_promise__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var core_js_modules_es_promise_finally__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! core-js/modules/es.promise.finally */ "./node_modules/core-js/modules/es.promise.finally.js");
+/* harmony import */ var core_js_modules_es_promise_finally__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_promise_finally__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var core_js_modules_es_regexp_exec__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! core-js/modules/es.regexp.exec */ "./node_modules/core-js/modules/es.regexp.exec.js");
+/* harmony import */ var core_js_modules_es_regexp_exec__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_regexp_exec__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var core_js_modules_es_string_split__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! core-js/modules/es.string.split */ "./node_modules/core-js/modules/es.string.split.js");
+/* harmony import */ var core_js_modules_es_string_split__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_string_split__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! core-js/modules/web.dom-collections.for-each */ "./node_modules/core-js/modules/web.dom-collections.for-each.js");
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_7__);
+/* harmony import */ var _services_requests__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../services/requests */ "./src/js/services/requests.js");
+/* harmony import */ var _clearObject__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./clearObject */ "./src/js/modules/clearObject.js");
+
+
+
 
 
 
@@ -4053,15 +4880,18 @@ __webpack_require__.r(__webpack_exports__);
 var forms = function forms(state) {
   var form = document.querySelectorAll('form'),
       windows = document.querySelectorAll('[data-modal]'),
-      inputs = document.querySelectorAll('input'); //Введение в поле с телефоном только цифр
-
-  Object(_checkNumInputs__WEBPACK_IMPORTED_MODULE_6__["default"])('input[name="user_phone"]'); //Ф-я для очищения полей
+      inputs = document.querySelectorAll('input'),
+      upload = document.querySelectorAll('[name="upload"]'); //выдергиваем upload для названия загружаемого изображения
+  //Ф-я для очищения полей
 
   var clearInputs = function clearInputs() {
     inputs.forEach(function (item) {
       item.value = '';
     });
-  }; //создание объекта с сообщениями
+    upload.forEach(function (item) {
+      item.previousElementSibling.textContent = 'Файл не выбран'; //возвращаем наименование после отправки изображения
+    });
+  }; //Создание объекта с сообщениями
 
 
   var message = {
@@ -4069,86 +4899,187 @@ var forms = function forms(state) {
     success: 'Спасибо! Скоро мы с вами свяжемся!',
     failure: 'Что-то пошло не так...',
     spinner: 'assets/img/spinner.gif',
-    ok: '/assets/img/ok.png',
-    fail: '/src/assets/img/fail.png'
-  }; //Создаем ф-ю отправки данных
-
-  var postData = function postData(url, data) {
-    var res;
-    return regeneratorRuntime.async(function postData$(_context) {
-      while (1) {
-        switch (_context.prev = _context.next) {
-          case 0:
-            //асинхронная ф-я - async
-            document.querySelector('.status').textContent = message.loading; //добавляем плашку о загрузке пока идет обработка запроса
-
-            _context.next = 3;
-            return regeneratorRuntime.awrap(fetch(url, {
-              //асинхронная операция await, чтобы JS дождался выполнения операции, т.к. ответ от сервера может идти долго
-              method: 'POST',
-              body: data
-            }));
-
-          case 3:
-            res = _context.sent;
-            _context.next = 6;
-            return regeneratorRuntime.awrap(res.text());
-
-          case 6:
-            return _context.abrupt("return", _context.sent);
-
-          case 7:
-          case "end":
-            return _context.stop();
-        }
-      }
-    });
+    ok: 'assets/img/ok.png',
+    fail: 'assets/img/fail.png'
   };
+  var path = {
+    designer: 'assets/server.php',
+    question: 'assets/question.php'
+  }; //Размещение названия файла вместо "Файл не выбран"
 
+  upload.forEach(function (item) {
+    item.addEventListener('input', function () {
+      //ОС сработает когда пользователь положит в поле
+      var dots; // точки
+
+      var arrName = item.files[0].name.split('.');
+      arrName[0].length > 6 ? dots = '...' : dots = '.';
+      var name = arrName[0].substring(0, 6) + dots + arrName[1];
+      item.previousElementSibling.textContent = name; //<div>Файл не выбран</div> является предыдущим соседом [name="upload"]. Внедряем туда имя файла
+    }); //item.files[0].name - полная строка
+    //item.files[0].name.split('.') - разбиваем строку на 2 части. Возвращает массив: ['имя файла', 'jpg'].
+    //item.files[0].name.split('.')[0] - обращение к первому аргументу массива те имени файла
+    //item.files[0].name.split('.')[0].length > 6 - проверка на длину имени файла
+    //item.files[0].name.split('.')[0].substring(0, 6) - обрезаем строку 6 символов
+    //item.files[0].name.split('.')[1] - расширение файла
+    //в объекте files лежат не только файлы , а еще дополнительные свойства,обращаясь к files[0] ты ищешь именно файл, а не свойства объекта files
+  });
   form.forEach(function (item) {
     item.addEventListener('submit', function (e) {
       e.preventDefault(); //отмена перезагрузки страницы
-      //Создание блока с статусом запроса
+
+      document.body.style.overflow = ''; //Создание блока с статусом запроса
 
       var statusMessage = document.createElement('div');
       statusMessage.classList.add('status');
-      item.appendChild(statusMessage); // создание формдаты для отправки на сервер
+      item.parentNode.appendChild(statusMessage); //размещаем блок  изображения в родителя формы
+
+      item.classList.add('animated', 'fadeOutUp'); //форма станет прозрачной
+
+      setTimeout(function () {
+        item.style.display = 'none'; //потом еще и исчезнет
+      }, 400); // а)Создание блока с изображением
+
+      var statusImg = document.createElement('img');
+      statusImg.setAttribute('src', message.spinner);
+      statusImg.classList.add('animated', 'fadeInUp');
+      statusImg.style.cssText = "\n                display: block;\n                margin: 0 auto";
+      statusMessage.appendChild(statusImg); // б)Создание блока с текстом
+
+      var textMessage = document.createElement('div');
+      textMessage.textContent = message.loading;
+      textMessage.style.textAlign = 'center';
+      statusMessage.appendChild(textMessage); // Cоздание форм-даты для отправки на сервер
 
       var formData = new FormData(item);
+      var api; //переменная для формирования динамического пути для отправки данных
 
-      if (item.getAttribute('data-calc') === 'end') {
-        //проверка на необходимую нам форму(в данном случае калькулятор) - берем ту форму где кнопка рассчитать стоимость
-        for (var key in state) {
-          formData.append(key, state[key]); //добавление (append) к стандартной форме formData(имени телефону) остальных данных с каалькулятора
-        }
-      } //Выведение сообщений на страницу
+      item.closest('.popup-design') || item.classList.contains('calc_form') ? api = path.designer : api = path.question; //если у какого нибудь родителя формы есть класс popup-design то в api размещаем путь к дизайнеру, если же нет то к вопроснику
 
+      console.log(api); //Выведение сообщений на страницу
 
-      postData('assets/server.php', formData).then(function (res) {
+      Object(_services_requests__WEBPACK_IMPORTED_MODULE_8__["postData"])(api, formData).then(function (res) {
         console.log(res);
-        statusMessage.textContent = message.success; //плашка об успешности
+        statusImg.setAttribute('src', message.ok); //рисунки статусов
+
+        textMessage.textContent = message.success; //плашка об успешности
       }).catch(function () {
-        return statusMessage.textContent = message.failure;
-      }) //плашка о неудаче
-      .finally(function () {
+        statusImg.setAttribute('src', message.fail); //рисунки статусов
+
+        textMessage.textContent = message.failure; //плашка о неудаче   
+      }).finally(function () {
         clearInputs(); //очищение полей после успешной/неуспешной отправки
 
         setTimeout(function () {
-          statusMessage.remove(); //удаляем сообщение через 10 сек
-        }, 10000);
-        windows.forEach(function (item) {
-          item.style.display = 'none'; //закрытие всех окон после отправки/неотправки данных
-        });
+          statusMessage.remove(); //удаляем сообщение через 5 сек
 
-        for (var _key in state) {
-          delete state[_key]; //очищение объекта
-        }
+          item.style.display = 'block';
+          item.classList.remove('fadeOutUp');
+          item.classList.remove('fadeInUp');
+          Object(_clearObject__WEBPACK_IMPORTED_MODULE_9__["default"])(state);
+          document.querySelectorAll('.calc select').forEach(function (select) {
+            select.value = ''; //очистка формы с заказом
+          });
+        }, 5000);
       });
     });
   });
 };
 
 /* harmony default export */ __webpack_exports__["default"] = (forms);
+
+/***/ }),
+
+/***/ "./src/js/modules/mask.js":
+/*!********************************!*\
+  !*** ./src/js/modules/mask.js ***!
+  \********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/es.array.for-each */ "./node_modules/core-js/modules/es.array.for-each.js");
+/* harmony import */ var core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var core_js_modules_es_regexp_exec__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! core-js/modules/es.regexp.exec */ "./node_modules/core-js/modules/es.regexp.exec.js");
+/* harmony import */ var core_js_modules_es_regexp_exec__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_regexp_exec__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var core_js_modules_es_string_replace__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! core-js/modules/es.string.replace */ "./node_modules/core-js/modules/es.string.replace.js");
+/* harmony import */ var core_js_modules_es_string_replace__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_string_replace__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! core-js/modules/web.dom-collections.for-each */ "./node_modules/core-js/modules/web.dom-collections.for-each.js");
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_3__);
+
+
+
+
+
+var mask = function mask(selector) {
+  //Ф-я установки позиция курсора
+  var setCursorPosition = function setCursorPosition(pos, elem) {
+    //в pos будет кол-во символов //elem -this - 'ktvyn с которым мы будем работать
+    elem.focus(); //вручную ставим focus на элементе
+
+    if (elem.setSelectionRange) {
+      elem.setSelectionRange(pos, pos);
+    } else if (elem.createTextRange) {
+      //Ниже пойдет ручной полифилл для старых браузеров IE
+      var range = elem.createTextRange(); // создание диапазона, кот-й нужно выделить
+      //с помощью метода createTextRange создается Объект TextRange
+
+      range.collapse(true); //Метод collapse объединяет граничные точки диапазона, т.е. первое с последней позицией
+
+      range.moveEnd('character', pos); //указываем коду где будет конечная точка выделения. character - символ
+
+      range.moveStart('character', pos); //указываем коду где будет конечная точка выделения (в итоге будет одно и то же место)
+
+      range.select(); //установка курсора и выделение того значения которое сформировалось при помощи 2-х предыдущих параметров(move)
+    }
+  };
+
+  function createMask(event) {
+    var matrix = "+7 (___) ___ __ __",
+        //матрица для создания
+    i = 0,
+        //итератор
+    def = matrix.replace(/\D/g, ''),
+        //значение статичное на основе матрицы - default (получаем все НЕцифры)
+    val = this.value.replace(/\D/g, ''); //значение динамичное на основании что ввел пользователь
+
+    if (def.length >= val.length) {
+      val = def; // если пользователь вдруг удаляет семерку и плюс, то у него не получится
+    }
+
+    this.value = matrix.replace(/./g, function (a) {
+      //перебор символов в матрице и возврат в зависимости от определенных условий // a - тех. аргумент
+      return /[_\d]/.test(a) && i < val.length ? val.charAt(i++) : i >= val.length ? '' : a;
+    }); ///[_\d]/ - диапазон поиска цифр и подчеркиваний
+    //Метод regexp.test(str) ищет совпадение и возвращает true/false, в зависимости от того, находит ли он его.
+    //val.charAt(i++) - метод charAt() возвращает символ по заданному индексу внутри строки
+    // Отработка события blur/focus
+
+    if (event.type === 'blur') {
+      //если пользователь нажал вне инпута 
+      if (this.value.length == 2) {
+        // если в инпуте 2 символа
+        this.value = ''; // то очистим инпут
+      }
+    } else {
+      // если focus
+      setCursorPosition(this.value.length, this); //то срабатывает эта ф-я //this.value.length - кол-во символов
+    }
+  } // событие focus вызывается в момент фокусировки, а blur – когда элемент теряет фокус.
+
+
+  var inputs = document.querySelectorAll(selector);
+  inputs.forEach(function (input) {
+    input.addEventListener('input', createMask);
+    input.addEventListener('keypress', createMask); //обработчик keypress, который срабатывает от нажатия на клавишу и ещё до того, как был введён какой-то символ, перемещает курсор перед кодом страны
+
+    input.addEventListener('focus', createMask);
+    input.addEventListener('blur', createMask);
+  });
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (mask);
 
 /***/ }),
 
@@ -4300,6 +5231,254 @@ var modals = function modals() {
 
 /***/ }),
 
+/***/ "./src/js/modules/picture.js":
+/*!***********************************!*\
+  !*** ./src/js/modules/picture.js ***!
+  \***********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/es.array.for-each */ "./node_modules/core-js/modules/es.array.for-each.js");
+/* harmony import */ var core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var core_js_modules_es_array_slice__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! core-js/modules/es.array.slice */ "./node_modules/core-js/modules/es.array.slice.js");
+/* harmony import */ var core_js_modules_es_array_slice__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_array_slice__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! core-js/modules/web.dom-collections.for-each */ "./node_modules/core-js/modules/web.dom-collections.for-each.js");
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_2__);
+
+
+
+
+var picture = function picture(imgSelector) {
+  var blocks = document.querySelectorAll(imgSelector);
+  blocks.forEach(function (item) {
+    item.addEventListener('mouseover', function () {
+      showImg(item);
+    });
+    item.addEventListener('mouseout', function () {
+      hideImg(item);
+    });
+  });
+
+  function showImg(block) {
+    var img = block.querySelector('img'); //выдергиваем наш рис из блока
+
+    img.src = img.src.slice(0, -4) + '-1.png'; //меняем ссылку
+
+    block.querySelectorAll('p:not(.sizes-hit)').forEach(function (p) {
+      p.style.display = 'none'; //убираем все параграфы кроме .sizes-hit
+    });
+  }
+
+  function hideImg(block) {
+    var img = block.querySelector('img');
+    img.src = img.src.slice(0, -6) + '.png';
+    block.querySelectorAll('p:not(.sizes-hit)').forEach(function (p) {
+      p.style.display = 'block';
+    });
+  }
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (picture);
+
+/***/ }),
+
+/***/ "./src/js/modules/scrolling.js":
+/*!*************************************!*\
+  !*** ./src/js/modules/scrolling.js ***!
+  \*************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/es.array.for-each */ "./node_modules/core-js/modules/es.array.for-each.js");
+/* harmony import */ var core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! core-js/modules/web.dom-collections.for-each */ "./node_modules/core-js/modules/web.dom-collections.for-each.js");
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_1__);
+
+
+
+var scrolling = function scrolling(upSelector) {
+  var upElem = document.querySelector(upSelector);
+  window.addEventListener('scroll', function () {
+    if (document.documentElement.scrollTop > 1650) {
+      upElem.style.opacity = '1';
+    } else {
+      upElem.style.opacity = '0';
+    }
+  }); //2-я часть // с помощью requestAnimationFrame
+
+  var links = document.querySelectorAll('[href^="#"]'),
+      // [href^=`#`]' - поиск всех ссылок начинающихся с #
+  speed = 0.2;
+  links.forEach(function (link) {
+    if (link.getAttribute('href') != '#') {
+      link.addEventListener('click', function (e) {
+        e.preventDefault();
+        var heightTop = document.documentElement.scrollTop,
+            hash = this.hash,
+            // получаем hash
+        toBlock = document.querySelector(hash).getBoundingClientRect().top,
+            //Метод Element.getBoundingClientRect() возвращает размер элемента и его позицию относительно viewport (часть страницы, показанная на экране, и которую мы видим). В данном случае используем top, т.е. сверху
+        start = null; //переменная определяющая стартовую позицию
+
+        requestAnimationFrame(step); //Ф-я кот-я занимается анимацией
+
+        function step(frame) {
+          //frame будет передаваться автоматически
+          if (start === null) {
+            // в первый ли раз будет запускаться анимация
+            start = frame;
+          }
+
+          var progress = frame - start,
+              //вычисляет 
+          r = toBlock < 0 ? Math.max(heightTop - progress / speed, heightTop + toBlock) : Math.min(heightTop + (progress / speed, heightTop + toBlock)); // кол-во пикселе, кот-е необходимо пролистать в течении этой анимации // нужна для того чтобы понимать на сколько пикселей нам нужно продвинуть анимацию и в какую сторону
+
+          document.documentElement.scrollTo(0, r); //на этом этапе идет анимация
+          //Условие о том когда анимация должна остановиться
+
+          if (r != heightTop + toBlock) {
+            //если она равна значит уже долистали до пикселя
+            requestAnimationFrame(step);
+          } else {
+            location.hash = hash; //анимация заканчивается
+          }
+        }
+      });
+    }
+  }); //2-я часть реализации // Код на чистом JS 
+  // const element = document.documentElement, //указывыем сразу 2 вида, тк разные браузеры по разному это рассчитывают
+  //       body = document.body;
+  // // подсчет того сколько нужно пролистать и как это сделать
+  // const countScroll = () => {
+  //     upElem.addEventListener('click', function(e) {
+  //         let scrollTop = Math.round(body.scrollTop || element.scrollTop); // Какое расстояние пролистано сверху пользователем
+  //         if (this.hash !== '') { //если хеш не пустой
+  //             e.preventDefault();
+  //             let hashElement = document.querySelector(this.hash), //Получаем тот элемент, к которому будем скролить
+  //                 hashElementTop = 0; //сколько нужно пролистать до родителя элемента
+  //             //Свойство location.hash возвращает якорную часть URL-адреса, включая знак решетки (#).
+  //             while (hashElement.offsetParent) { //в свойстве offsetParent находится предок элемента, который используется внутри браузера для вычисления координат при рендеринге.
+  //                 hashElementTop += hashElement.offsetTop; //cвойство offsetTop содержит координату x относительно верхнего угла offsetParent
+  //                 hashElement = hashElement.offsetParent; //перебор всех родителей, кот-е могут быть основой для позиционирования элемента
+  //             }
+  //             hashElementTop = Math.round(hashElementTop); //сколько пикселей стоит от родительского элемента
+  //             smoothScroll(scrollTop, hashElementTop, this.hash);
+  //         }
+  //     });
+  // }
+  // const smoothScroll = (from, to, hash) => {
+  //     let timeInterval = 1, //знач-е ч/з кот-е будет производится анимация
+  //         prevScrollTop, // предшествующее значение
+  //         speed; //скорость анимации
+  //     if (to > from) { //если hashElementTop будет больше расстояния пролистанного сверху
+  //         speed = 30; //движение сверху вниз
+  //     } else {
+  //         speed = -30; //движение снизу вверх
+  //     }
+  //     //Ф-я анимации
+  //     let move = setInterval(function() { 
+  //         let scrollTop = Math.round(body.scrollTop || element.scrollTop); //в SetInterval это значение будет постоянно меняться
+  //         if ( //условие о том что пользователь долистал до нужного момента
+  //             prevScrollTop === scrollTop || //пред анимация, кот-я была воспроизведена равна уже тому что мы хотели получить // это значит, что нам некуда скролить страницу
+  //             (to > from && scrollTop >= to) ||
+  //             (to < from && scrollTop <= to)
+  //         ) {
+  //             clearInterval(move);
+  //             console.log(history);
+  //             history.replaceState(history.state, document.title, location.href.replace(/#.*$/g, '') + hash);
+  //         } else {
+  //             body.scrollTop += speed;
+  //             element.scrollTop += speed;
+  //             prevScrollTop = scrollTop; //каждый раз переписывается в это строчке //будем знать сколько еще осталось до того момента как мы долистаем
+  //         }
+  //     }, timeInterval);
+  // }
+  // countScroll();
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (scrolling);
+
+/***/ }),
+
+/***/ "./src/js/modules/showMoreStyles.js":
+/*!******************************************!*\
+  !*** ./src/js/modules/showMoreStyles.js ***!
+  \******************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var core_js_modules_es_array_concat__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/es.array.concat */ "./node_modules/core-js/modules/es.array.concat.js");
+/* harmony import */ var core_js_modules_es_array_concat__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_array_concat__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! core-js/modules/es.array.for-each */ "./node_modules/core-js/modules/es.array.for-each.js");
+/* harmony import */ var core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var core_js_modules_es_string_link__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! core-js/modules/es.string.link */ "./node_modules/core-js/modules/es.string.link.js");
+/* harmony import */ var core_js_modules_es_string_link__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_string_link__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! core-js/modules/web.dom-collections.for-each */ "./node_modules/core-js/modules/web.dom-collections.for-each.js");
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _services_requests__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../services/requests */ "./src/js/services/requests.js");
+
+
+
+
+
+
+var showMoreStyles = function showMoreStyles(trigger, wrapper) {
+  var btn = document.querySelector(trigger),
+      block = document.querySelector(wrapper); //   cards = document.querySelectorAll(blocks);
+  // Первый вариант (когда элементы просто скрыты на странице)
+  // cards.forEach(item => {
+  //     item.classList.add('animated', 'fadeInUp');
+  // });
+  // btn.addEventListener('click', () => {
+  //     cards.forEach(item => {
+  //         item.classList.remove('hidden-lg', 'hidden-md', 'hidden-sm', 'hidden-xs');
+  //         item.classList.add('col-sm-3', 'col-sm-offset-0', 'col-xs-10', 'col-xs-offset-1');
+  //     });
+  //     btn.remove();
+  // });
+  //Второй вариант (когда элементы на сервере)
+
+  btn.addEventListener('click', function () {
+    Object(_services_requests__WEBPACK_IMPORTED_MODULE_4__["getResource"])('http://localhost:3000/styles').then(function (res) {
+      return createCards(res);
+    }).catch(function () {
+      return showError();
+    });
+    this.remove();
+  }); //Ф-я по перебору и размещению данных из сервера на страницу
+
+  function createCards(response) {
+    //в запросе приходит объект из сервера
+    response.forEach(function (_ref) {
+      var src = _ref.src,
+          title = _ref.title,
+          link = _ref.link;
+      var card = document.createElement('div');
+      card.classList.add('col-sm-3', 'col-sm-offset-0', 'col-xs-10', 'col-xs-offset-1', 'animated', 'fadeInUp');
+      card.innerHTML = "\n            <div class=styles-block>\n\t\t\t<img src=".concat(src, " alt=\"style\">\n\t\t\t\t<h4>").concat(title, "</h4>\n\t\t\t\t\t<a href=\"").concat(link, "\">\u041F\u043E\u0434\u0440\u043E\u0431\u043D\u0435\u0435</a>\n\t\t    </div>");
+      block.appendChild(card); //размещаем карты на странице
+    });
+  }
+
+  function showError() {
+    var statusError = document.createElement('div');
+    statusError.classList.add('animated', 'fadeInUp');
+    statusError.textContent = 'Что-то пошло не так...';
+    statusError.style.cssText = "\n        text-align:center;\n        color: red;\n        font-size: 200%";
+    block.appendChild(statusError);
+  }
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (showMoreStyles);
+
+/***/ }),
+
 /***/ "./src/js/modules/sliders.js":
 /*!***********************************!*\
   !*** ./src/js/modules/sliders.js ***!
@@ -4398,6 +5577,99 @@ var sliders = function sliders(slides, dir, prev, next) {
 };
 
 /* harmony default export */ __webpack_exports__["default"] = (sliders);
+
+/***/ }),
+
+/***/ "./src/js/services/requests.js":
+/*!*************************************!*\
+  !*** ./src/js/services/requests.js ***!
+  \*************************************/
+/*! exports provided: postData, getResource */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "postData", function() { return postData; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getResource", function() { return getResource; });
+/* harmony import */ var core_js_modules_es_array_concat__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/es.array.concat */ "./node_modules/core-js/modules/es.array.concat.js");
+/* harmony import */ var core_js_modules_es_array_concat__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_array_concat__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var core_js_modules_es_object_to_string__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! core-js/modules/es.object.to-string */ "./node_modules/core-js/modules/es.object.to-string.js");
+/* harmony import */ var core_js_modules_es_object_to_string__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_object_to_string__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var core_js_modules_es_promise__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! core-js/modules/es.promise */ "./node_modules/core-js/modules/es.promise.js");
+/* harmony import */ var core_js_modules_es_promise__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_promise__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var regenerator_runtime_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! regenerator-runtime/runtime */ "./node_modules/regenerator-runtime/runtime.js");
+/* harmony import */ var regenerator_runtime_runtime__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(regenerator_runtime_runtime__WEBPACK_IMPORTED_MODULE_3__);
+
+
+
+
+
+//Создаем ф-ю отправки данных POST-запрос
+var postData = function postData(url, data) {
+  var res;
+  return regeneratorRuntime.async(function postData$(_context) {
+    while (1) {
+      switch (_context.prev = _context.next) {
+        case 0:
+          _context.next = 2;
+          return regeneratorRuntime.awrap(fetch(url, {
+            //асинхронная операция await, чтобы JS дождался выполнения операции, т.к. ответ от сервера может идти долго
+            method: 'POST',
+            body: data
+          }));
+
+        case 2:
+          res = _context.sent;
+          _context.next = 5;
+          return regeneratorRuntime.awrap(res.text());
+
+        case 5:
+          return _context.abrupt("return", _context.sent);
+
+        case 6:
+        case "end":
+          return _context.stop();
+      }
+    }
+  });
+}; // Ф-я получения данных GET-запрос
+
+
+var getResource = function getResource(url) {
+  var res;
+  return regeneratorRuntime.async(function getResource$(_context2) {
+    while (1) {
+      switch (_context2.prev = _context2.next) {
+        case 0:
+          _context2.next = 2;
+          return regeneratorRuntime.awrap(fetch(url));
+
+        case 2:
+          res = _context2.sent;
+
+          if (res.ok) {
+            _context2.next = 5;
+            break;
+          }
+
+          throw new Error("Could not fetch ".concat(url, ", status: ").concat(res.status));
+
+        case 5:
+          _context2.next = 7;
+          return regeneratorRuntime.awrap(res.json());
+
+        case 7:
+          return _context2.abrupt("return", _context2.sent);
+
+        case 8:
+        case "end":
+          return _context2.stop();
+      }
+    }
+  });
+};
+
+
 
 /***/ })
 

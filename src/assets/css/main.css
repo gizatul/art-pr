@@ -903,11 +903,33 @@ h4 {
 .often-questions .accordion-heading span {
   border-bottom: 2px dotted #333;
 }
-.often-questions .accordion-block {
-  margin-top: 1rem;
+.often-questions p.active-style span {
+  color: #e950d7;
+  font-weight: 900;
+  text-decoration: none;
+  border: 0;
+}
+
+.often-questions .accordion-heading.active+.accordion-block { /*реализация появления блока после заголовка*/
+  display: block;
+}
+.often-questions .accordion-block { /*скрываем контент с помощью CSS*/
+  /* display: none; */
+  /* margin-top: 1rem; */
   background-color: #f7e7e6;
+  max-height: 0;
+  opacity: 0;
+  transition: all 0.3s ease-out;
+  overflow: hidden; /*тк торчит стрелка на вверх, то скроем его
+  /* padding: 3rem 4rem; */
+}
+.often-questions .accordion-block.active-content {
+  margin-top: 1rem;
+  opacity: 1;
+  overflow: visible; 
   padding: 3rem 4rem;
 }
+
 .often-questions .accordion-block:before {
   content: '';
   position: absolute;
@@ -1258,6 +1280,19 @@ h4 {
   border-radius: 4px;
   transform: translateX(-50%) !important;
   padding: 3rem 6rem 4rem 6rem;
+}
+.pageup {
+opacity: 0;
+width: 26px ;
+height: 26px;
+position: fixed;
+bottom: 100px;
+right: 5%;
+z-index: 30;
+background-color: #fff;
+cursor: pointer;
+border: 1px solid white;
+  transition: 1s all;
 }
 @media (max-width: 1399px) {
   .paints {
