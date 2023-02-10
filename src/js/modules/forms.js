@@ -35,6 +35,7 @@ const forms = (state) => {
     //Размещение названия файла вместо "Файл не выбран"
     upload.forEach(item => {
         item.addEventListener('input', () => { //ОС сработает когда пользователь положит в поле
+            console.log(item.files[0]); // item.files[0] - обращение к загруженному файлу
             let dots; // точки
             const arrName = item.files[0].name.split('.');
             arrName[0].length > 6 ? dots = '...' : dots = '.';
@@ -83,6 +84,11 @@ const forms = (state) => {
             const formData = new FormData(item);
             let api; //переменная для формирования динамического пути для отправки данных
             item.closest('.popup-design') || item.classList.contains('calc_form') ? api = path.designer : api = path.question; //если у какого нибудь родителя формы есть класс popup-design то в api размещаем путь к дизайнеру, если же нет то к вопроснику
+            if (item.classList.contains('calc_form')) {
+                for (let key in state) {
+                    formData.append(key, state[key]); //добавление (append) к стандартной форме formData(имени телефону) остальных данных с каалькулятора
+                };
+            }
             console.log(api);
 
             //Выведение сообщений на страницу
