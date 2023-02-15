@@ -11,12 +11,11 @@ const burger = (triggerSelector, menuSelector) => {
             burgerMenu.style.display = 'none';
         }
     });
-    //window.screen.availWidth - Свойство availWidth возвращает ширину экрана пользователя служащую непосредственно для вывода информации (т.е. ширина без размера таких элементов браузера как панель задач, полоса прокрутки и т.д.).
-    window.addEventListener('resize', () => { //событие ресайз отслеживает когда польз изменяет размер экрана
+    
+    window.addEventListener('resize', () => { 
         if (window.screen.availWidth > 991) {
             burgerMenu.style.display = 'none';
         }
     });
-    
 };
 export default burger;

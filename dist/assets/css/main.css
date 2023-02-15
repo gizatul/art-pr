@@ -910,18 +910,15 @@ h4 {
   border: 0;
 }
 
-.often-questions .accordion-heading.active+.accordion-block { /*реализация появления блока после заголовка*/
+.often-questions .accordion-heading.active+.accordion-block { 
   display: block;
 }
-.often-questions .accordion-block { /*скрываем контент с помощью CSS*/
-  /* display: none; */
-  /* margin-top: 1rem; */
+.often-questions .accordion-block {
   background-color: #f7e7e6;
   max-height: 0;
   opacity: 0;
   transition: all 0.3s ease-out;
-  overflow: hidden; /*тк торчит стрелка на вверх, то скроем его
-  /* padding: 3rem 4rem; */
+  overflow: hidden; 
 }
 .often-questions .accordion-block.active-content {
   margin-top: 1rem;
